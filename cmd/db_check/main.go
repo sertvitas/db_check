@@ -11,6 +11,6 @@ import (
 func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
-	logger.Info().Msg("starting thimgs")
+	logger.Info().Msg("starting some other shit")
 
 }
