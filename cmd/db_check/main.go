@@ -39,7 +39,7 @@ func main() {
 	portToCheck := 443
 	timeoutDuration := 5 * time.Second
 	conncheck := CheckTCPResponse.CheckTCPResponse(ipToCheck, portToCheck, timeoutDuration)
-	logger.Info().Msgf("TCP response: ", conncheck)
+	logger.Info().Msgf("TCP response: %s", conncheck)
 
 	instanceName := "cts-cts-sandbox"
 	region := "us-east-1b"
