@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	CheckTCPResponse "github.com/sertvitas/db_check/cmd/checkTCP"
 	"os"
-	"strconv"
+	"time"
 
 	"github.com/sertvitas/db_check/cmd/rdsip"
 
@@ -16,9 +17,9 @@ func getcreds(db string) string {
 	return "creds for " + db + " from vault"
 }
 
-func checktcp(port int) string {
-	return "checking tcp port " + strconv.Itoa(port)
-}
+//func checktcp(port int) string {
+//	return "checking tcp port " + strconv.Itoa(port)
+//}
 
 func dblogin(auth string) string {
 	return "logging into CTS db with " + auth
@@ -33,7 +34,10 @@ func main() {
 	db := getcreds("CTS")
 	logger.Info().Msgf("getting %s", db)
 
-	conncheck := checktcp(5432)
+	ipToCheck := "212.58.249.144"
+	portToCheck := 443
+	timeoutDuration := 5 * time.Second
+	conncheck := CheckTCPResponse.CheckTCPResponse(ipToCheck, portToCheck, timeoutDuration)
 	logger.Info().Msgf(conncheck)
 
 	instanceName := "cts-cts-sandbox"
