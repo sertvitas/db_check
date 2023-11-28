@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	CheckTCPResponse "github.com/sertvitas/db_check/cmd/checkTCP"
 	"os"
 	"time"
+
+	CheckTCPResponse "github.com/sertvitas/db_check/cmd/checkTCP"
 
 	"github.com/sertvitas/db_check/cmd/rdsip"
 

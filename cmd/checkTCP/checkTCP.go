@@ -1,4 +1,4 @@
-package CheckTCPResponse
+package checktcpresponse
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// CheckTCPResponse attempts to establish a TCP connection to the specified IP address and port
 func CheckTCPResponse(ip string, port int, timeout time.Duration) string {
 	// Concatenate IP and port
 	address := fmt.Sprintf("%s:%d", ip, port)
