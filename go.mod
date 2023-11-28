@@ -2,7 +2,10 @@ module github.com/sertvitas/db_check
 
 go 1.21.3
 
-require github.com/rs/zerolog v1.31.0
+require (
+	github.com/natemarks/secret-hoard v0.0.0-20231121133131-d1085c4166b9
+	github.com/rs/zerolog v1.31.0
+)
 
 require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
