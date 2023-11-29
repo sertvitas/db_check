@@ -30,7 +30,7 @@ func dblogin(auth string) string {
 func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
-	logger.Info().Msg("starting some other shit")
+	logger.Info().Msg("starting some stuff")
 
 	db := getcreds("CTS")
 	logger.Info().Msgf("getting %s", db)
@@ -41,7 +41,7 @@ func main() {
 	conncheck := CheckTCPResponse.CheckTCPResponse(ipToCheck, portToCheck, timeoutDuration)
 	logger.Info().Msgf("TCP response: %s", conncheck)
 
-	instanceName := "cts-cts-sandbox"
+	instanceName := "cts-cts-sandbox.ceitysk3wbcf.us-east-1.rds.amazonaws.com"
 	region := "us-east-1b"
 	ip, err := rdsip.GetRDSInstanceIP(instanceName, region)
 	if err != nil {
