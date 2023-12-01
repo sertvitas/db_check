@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/sertvitas/db_check/report"
 	"net"
 	"os"
 	"time"
@@ -75,18 +76,51 @@ func GetRDSSecret(secretID string) (*RDSSecretData, error) {
 }
 
 func main() {
+
+	var eventLog []report.Event
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Info().Msg("starting some stuff")
 
-	secretID := "SandboxSharedRdsInstanceMas-JyJHrRRpi8Ex"
-	secret, err := GetRDSSecret(secretID)
-	logger.Info().Msgf("host: %s", secret.Host)
+	//secretID := "SandboxSharedRdsInstanceMas-JyJHrRRpi8Ex"
+	//secret, err := GetRDSSecret(secretID)
+	//logger.Info().Msgf("host: %s", secret.Host)
 
-	err = CheckTCPConnectivity(*secret)
-	if err != nil {
-		panic(err)
-	}
-	logger.Info().Msg("tcp connectivity check passed")
-
+	//err = CheckTCPConnectivity(*secret)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//logger.Info().Msg("tcp connectivity check passed")
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Start hardware upgrade",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Succeeded",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Succeeded",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Failed",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Failed",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Succeeded",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Succeeded",
+	})
+	eventLog = append(eventLog, report.Event{
+		Time:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+		Description: "End hardware upgrade",
+	})
 }
