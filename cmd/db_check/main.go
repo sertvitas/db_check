@@ -1,55 +1,92 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"net"
 	"os"
 	"time"
 
-	CheckTCPResponse "github.com/sertvitas/db_check/cmd/checkTCP"
-
-	"github.com/sertvitas/db_check/cmd/rdsip"
-
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/sertvitas/db_check/version"
 
 	"github.com/rs/zerolog"
 )
 
-func getcreds(db string) string {
-	return "creds for " + db + " from vault"
+// RDSSecretData is the struct of the secret generated for RDS by CDK deployment
+// Password: the password for the database user
+// Engine: the database engine
+// Port: the port the database is listening on
+// DbInstanceIdentifier: the unique name of the RDS instance
+// Host: the hostname of the RDS instance
+// Username: the username for the database user
+type RDSSecretData struct {
+	Password             string `json:"password"`
+	Engine               string `json:"engine"`
+	Port                 int    `json:"port"`
+	DbInstanceIdentifier string `json:"dbInstanceIdentifier"`
+	Host                 string `json:"host"`
+	Username             string `json:"username"`
 }
 
-//func checktcp(port int) string {
-//	return "checking tcp port " + strconv.Itoa(port)
-//}
-
-func dblogin(auth string) string {
-	return "logging into CTS db with " + auth
+// CheckTCPConnectivity checks TCP connectivity to the specified host and port
+func CheckTCPConnectivity(secret RDSSecretData) error {
+	address := fmt.Sprintf("%s:%d", secret.Host, secret.Port)
+	conn, err := net.DialTimeout("tcp", address, 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("failed to connect to %s: %v", address, err)
+	}
+	defer conn.Close()
+	return nil
 }
 
-// func dbping()
+// GetRDSSecret retrieves the secret value for the given secret ID and unmarshals it into RDSSecretData
+func GetRDSSecret(secretID string) (*RDSSecretData, error) {
+	// Load AWS SDK configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a Secrets Manager client
+	client := secretsmanager.NewFromConfig(cfg)
+
+	// Input for the GetSecretValue API call
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: &secretID,
+	}
+
+	// Execute the GetSecretValue API call
+	result, err := client.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret value, %v", err)
+	}
+
+	// Unmarshal the secret value into RDSSecretData struct
+	var secretData RDSSecretData
+	err = json.Unmarshal([]byte(*result.SecretString), &secretData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal secret value, %v", err)
+	}
+
+	return &secretData, nil
+}
+
 func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
 	logger.Info().Msg("starting some stuff")
 
-	db := getcreds("CTS")
-	logger.Info().Msgf("getting %s", db)
+	secretID := "SandboxSharedRdsInstanceMas-JyJHrRRpi8Ex"
+	secret, err := GetRDSSecret(secretID)
+	logger.Info().Msgf("host: %s", secret.Host)
 
-	ipToCheck := "212.58.249.144"
-	portToCheck := 443
-	timeoutDuration := 5 * time.Second
-	conncheck := CheckTCPResponse.CheckTCPResponse(ipToCheck, portToCheck, timeoutDuration)
-	logger.Info().Msgf("TCP response: %s", conncheck)
-
-	instanceName := "cts-cts-sandbox.ceitysk3wbcf.us-east-1.rds.amazonaws.com"
-	region := "us-east-1b"
-	ip, err := rdsip.GetRDSInstanceIP(instanceName, region)
+	err = CheckTCPConnectivity(*secret)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		panic(err)
 	}
-	logger.Info().Msgf(ip)
+	logger.Info().Msg("tcp connectivity check passed")
 
-	//auth := dblogin(db)
-	//logger.Info().Msg(auth)
 }
