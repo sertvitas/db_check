@@ -27,7 +27,7 @@ type RDSSecretData struct {
 }
 
 // InstanceIsAvailable checks if the RDS instance is available
-func InstanceIsAvailable(instanceID string) bool {
+func InstanceIsAvailable(instanceID string, log *zerolog.Logger) bool {
 	// Load AWS SDK configuration
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -52,7 +52,7 @@ func InstanceIsAvailable(instanceID string) bool {
 	if len(output.DBInstances) == 0 {
 		panic(fmt.Sprintf("no instances found with ID: %s", instanceID))
 	}
-
+	log.Info().Msgf("Instance %s status: %s", instanceID, *output.DBInstances[0].DBInstanceStatus)
 	// Extract the status of the RDS instance
 	return *output.DBInstances[0].DBInstanceStatus == "available"
 }
@@ -70,8 +70,7 @@ func InstanceMonitor(
 	time.Sleep(time.Duration(initialDelaySeconds) * time.Second)
 	log.Info().Msgf("Monitoring %s", secret.DbInstanceIdentifier)
 	for {
-		if InstanceIsAvailable(secret.DbInstanceIdentifier) {
-			log.Info().Msgf("%s is available", secret.DbInstanceIdentifier)
+		if InstanceIsAvailable(secret.DbInstanceIdentifier, log) {
 			*isAvailable = true
 			break
 		}
