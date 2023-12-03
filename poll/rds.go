@@ -2,11 +2,14 @@ package poll
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 )
 
@@ -71,10 +74,63 @@ func InstanceMonitor(
 	log.Info().Msgf("Monitoring %s", secret.DbInstanceIdentifier)
 	for {
 		if InstanceIsAvailable(secret.DbInstanceIdentifier, log) {
+			log.Info().Msgf("%s is available", secret.DbInstanceIdentifier)
 			*isAvailable = true
 			break
 		}
 		log.Info().Msgf("%s is not available", secret.DbInstanceIdentifier)
 		time.Sleep(time.Duration(pollDelaySeconds) * time.Second)
 	}
+}
+
+// CheckDBConnection attempts to connect to the database using the given credentials
+func CheckDBConnection(secret RDSSecretData) error {
+	// Create a connection string
+	connStr := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=postgres sslmode=disable",
+		secret.Host, secret.Port, secret.Username, secret.Password)
+
+	// Attempt to connect to the database
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return err
+	}
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+
+		}
+	}(db)
+
+	// Ping the database to verify connectivity
+	if err := db.Ping(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CheckTCPConnectivity checks TCP connectivity to the specified host and port
+func CheckTCPConnectivity(secret RDSSecretData) error {
+	address := fmt.Sprintf("%s:%d", secret.Host, secret.Port)
+	conn, err := net.DialTimeout("tcp", address, 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("failed to connect to %s: %v", address, err)
+	}
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+
+		}
+	}(conn)
+	return nil
+}
+
+// DBLogin checks TCP connectivity and DB connectivity to the specified host and port
+func DBLogin(secret RDSSecretData) (err error) {
+	err = CheckTCPConnectivity(secret)
+	if err != nil {
+		return err
+	}
+	err = CheckDBConnection(secret)
+	return nil
 }
