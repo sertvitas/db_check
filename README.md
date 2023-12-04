@@ -11,12 +11,8 @@
 
 
 ```bash
-db_check secretID
-started hardware update @ <timestamp>
-down from <timestamp> to <timestamp> (duration)
-down from <timestamp> to <timestamp> (duration)
-down from <timestamp> to <timestamp> (duration)
-hardware update complete @ <timestamp>
+export AWS_REGION=us-east-1
+./db_check <secret ID>
 
 
 ```
