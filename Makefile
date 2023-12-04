@@ -35,27 +35,14 @@ build: git-status ${EXECUTABLES}
 	rm -rf build/current
 	cp -R $(CDIR)/build/$(COMMIT) $(CDIR)/build/current
 
-docker-build: build ## create docker image with commit tag
-	( \
-	   docker build --no-cache \
-       	-t db_check:$(COMMIT) \
-       	-t db_check:latest \
-       	-f Dockerfile .; \
-	)
+release: git-status build
+	mkdir -p release/$(COMMIT)
+	@for o in $(GOOS); do \
+	  for a in $(GOARCH); do \
+        tar -C ./build/$(COMMIT)/$${o}/$${a} -czvf release/$(COMMIT)/db_check_$(COMMIT)_$${o}_$${a}.tar.gz . ; \
+	  done \
+    done ; \
 
-release: docker-build ## upload the latest docker image to ECR
-	( \
-	   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 709310380790.dkr.ecr.us-east-1.amazonaws.com; \
-	   docker tag db_check:latest 709310380790.dkr.ecr.us-east-1.amazonaws.com/db_check:latest; \
-	   docker push 709310380790.dkr.ecr.us-east-1.amazonaws.com/db_check:latest; \
-	)
-
-docker-run: ## run docker image
-	( \
-	   docker run -it --rm \
-	   	-e INTERVAL='6' \
-	   	db_check \
-	)
 
 test:
 	@go test -v ${PKG_LIST}
