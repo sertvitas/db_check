@@ -9,6 +9,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+
+	// Import the postgres driver
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 )

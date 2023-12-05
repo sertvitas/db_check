@@ -79,6 +79,9 @@ func main() {
 		logger.Fatal().Err(err).Msg("TCP connectivity check failed")
 	}
 
+	// bailout if we can't get the instance status
+	poll.InstanceIsAvailable(secret.DbInstanceIdentifier, &logger)
+
 	// set the initial event log
 	eventLog = append(eventLog, report.Event{Time: time.Now(), Description: "Start hardware upgrade"})
 
