@@ -37,7 +37,9 @@ type Report struct {
 
 // String returns a string representation of the event
 func (r Report) String() string {
-	return fmt.Sprintf("Start Event: %s\nEnd Event: %s\nDowntime Log: %v", r.StartEvent, r.EndEvent, r.DowntimeLog)
+	totalUpgradeTime := r.EndEvent.Time.Sub(r.StartEvent.Time)
+	upgradeMinutes := totalUpgradeTime.Minutes()
+	return fmt.Sprintf("Start Event: %s\nEnd Event: %s\nTotal time: %v\nDowntime Log: %v", r.StartEvent, r.EndEvent, upgradeMinutes, r.DowntimeLog)
 }
 
 // GetDowntimeLog takes an event log and returns a downtime log
