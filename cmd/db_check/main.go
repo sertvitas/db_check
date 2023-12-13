@@ -61,13 +61,20 @@ func GetRDSSecret(secretID string) (*poll.RDSSecretData, error) {
 	return &secretData, nil
 }
 
+func getSecretIDFromInput() string {
+	if len(os.Args) < 2 {
+		panic("usage: db_check my_secret_id")
+	}
+	return os.Args[1]
+}
 func main() {
 	// set up logger
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stderr).With().Str("version", version.Version).Timestamp().Logger()
-
+	secretID := getSecretIDFromInput()
+	logger.Info().Msgf("secret id: %s", secretID)
 	// get secret value
-	secret, err := GetRDSSecret("SandboxSharedRdsInstanceMas-JyJHrRRpi8Ex")
+	secret, err := GetRDSSecret(secretID)
 	if err != nil {
 		panic(err)
 	}
